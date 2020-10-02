@@ -57,6 +57,10 @@ func Test(t *testing.T) {
 	eq(j.Get("a").Map()["b"].Int(), 1)
 	eq(len(j.Get("c").Map()), 0)
 
+	eq(j.Has("a.b"), true)
+	eq(j.Has("a.x"), false)
+	eq(j.Has("c.10"), false)
+
 	self := gson.JSON{}
 	self.Sets("ok")
 	eq(self.Str(), "ok")

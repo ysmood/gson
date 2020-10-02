@@ -20,11 +20,18 @@ func (j JSON) MarshalJSON() ([]byte, error) {
 
 // Get by json path. It's a shortcut for Gets.
 func (j JSON) Get(path string) JSON {
-	j, _ = j.Gets(parsePath(path)...)
+	j, _ = j.Gets(Path(path)...)
 	return j
 }
 
+// Has an element is found on the path
+func (j JSON) Has(path string) bool {
+	_, has := j.Gets(Path(path)...)
+	return has
+}
+
 // Gets element by path sections. If a section is not string or int, it will be ignored.
+// The second return value will be false if not found.
 func (j JSON) Gets(sections ...interface{}) (JSON, bool) {
 	for _, sect := range sections {
 		switch k := sect.(type) {
@@ -154,7 +161,8 @@ func toJSONVal(val interface{}) interface{} {
 
 var regIndex = regexp.MustCompile(`^0|([1-9]\d*)$`)
 
-func parsePath(path string) []interface{} {
+// Path from string
+func Path(path string) []interface{} {
 	list := strings.Split(path, ".")
 	sects := make([]interface{}, len(list))
 	for i, s := range list {

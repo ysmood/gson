@@ -14,7 +14,7 @@ func (j *JSON) UnmarshalJSON(b []byte) error {
 
 // Set by json path. It's a shortcut for Sets.
 func (j *JSON) Set(path string, val interface{}) {
-	j.Sets(val, parsePath(path)...)
+	j.Sets(val, Path(path)...)
 }
 
 // Sets element by path sections. If a section is not string or int, it will be ignored.
