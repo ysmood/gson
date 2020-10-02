@@ -1,6 +1,7 @@
 package gson
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"regexp"
@@ -16,6 +17,21 @@ type JSON struct {
 // MarshalJSON interface
 func (j JSON) MarshalJSON() ([]byte, error) {
 	return json.Marshal(j.val)
+}
+
+// JSON string
+func (j JSON) JSON(indent string) string {
+	buf := bytes.NewBuffer(nil)
+	enc := json.NewEncoder(buf)
+	enc.SetEscapeHTML(false)
+	enc.SetIndent("", indent)
+	_ = enc.Encode(j.val)
+	return buf.String()
+}
+
+// String implements fmt.Stringer interface
+func (j JSON) String() string {
+	return fmt.Sprintf("%v", j.val)
 }
 
 // Get by json path. It's a shortcut for Gets.
@@ -127,11 +143,6 @@ func (j JSON) Join(sep string) string {
 	}
 
 	return strings.Join(list, sep)
-}
-
-// String implements fmt.Stringer interface
-func (j JSON) String() string {
-	return fmt.Sprintf("%v", j.val)
 }
 
 func toJSONVal(val interface{}) interface{} {

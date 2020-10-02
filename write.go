@@ -13,19 +13,19 @@ func (j *JSON) UnmarshalJSON(b []byte) error {
 }
 
 // Set by json path. It's a shortcut for Sets.
-func (j *JSON) Set(path string, val interface{}) {
-	j.Sets(val, Path(path)...)
+func (j *JSON) Set(path string, val interface{}) *JSON {
+	return j.Sets(val, Path(path)...)
 }
 
 // Sets element by path sections. If a section is not string or int, it will be ignored.
-func (j *JSON) Sets(value interface{}, sections ...interface{}) {
+func (j *JSON) Sets(value interface{}, sections ...interface{}) *JSON {
 	last := len(sections) - 1
 	val := j.val
 	var override func(interface{})
 
 	if last == -1 {
 		j.val = toJSONVal(value)
-		return
+		return j
 	}
 
 	for i, sect := range sections {
@@ -40,7 +40,7 @@ func (j *JSON) Sets(value interface{}, sections ...interface{}) {
 			}
 			if i == last {
 				arr[k] = toJSONVal(value)
-				return
+				return j
 			}
 			val = arr[k]
 
@@ -63,4 +63,5 @@ func (j *JSON) Sets(value interface{}, sections ...interface{}) {
 			}
 		}
 	}
+	return j
 }
