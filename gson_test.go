@@ -15,19 +15,19 @@ func ExampleJSON() {
 	fmt.Println(obj.Get("a.b.0").Int())
 
 	obj.Set("a.b.1", "ok").Set("c", 2)
-	fmt.Println(obj.JSON("  "))
+	fmt.Println(">", obj.JSON("> ", "  "))
 
 	// Output:
 	// 1
-	// {
-	//   "a": {
-	//     "b": [
-	//       1,
-	//       "ok"
-	//     ]
-	//   },
-	//   "c": 2
-	// }
+	// > {
+	// >   "a": {
+	// >     "b": [
+	// >       1,
+	// >       "ok"
+	// >     ]
+	// >   },
+	// >   "c": 2
+	// > }
 }
 
 func Test(t *testing.T) {

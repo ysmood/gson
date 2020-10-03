@@ -20,11 +20,11 @@ func (j JSON) MarshalJSON() ([]byte, error) {
 }
 
 // JSON string
-func (j JSON) JSON(indent string) string {
+func (j JSON) JSON(prefix, indent string) string {
 	buf := bytes.NewBuffer(nil)
 	enc := json.NewEncoder(buf)
 	enc.SetEscapeHTML(false)
-	enc.SetIndent("", indent)
+	enc.SetIndent(prefix, indent)
 	_ = enc.Encode(j.val)
 	return buf.String()
 }
