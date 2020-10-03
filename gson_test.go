@@ -1,7 +1,7 @@
 package gson_test
 
 import (
-	"encoding/json"
+	"bytes"
 	"fmt"
 	"reflect"
 	"testing"
@@ -10,8 +10,7 @@ import (
 )
 
 func ExampleJSON() {
-	var obj gson.JSON
-	_ = json.Unmarshal([]byte(`{"a": {"b": [1, 2]}}`), &obj)
+	obj := gson.New(`{"a": {"b": [1, 2]}}`)
 
 	fmt.Println(obj.Get("a.b.0").Int())
 
@@ -33,6 +32,10 @@ func ExampleJSON() {
 
 func Test(t *testing.T) {
 	eq := genEq(t)
+
+	eq(gson.New([]byte("10")).Int(), 10)
+	eq(gson.New(bytes.NewBufferString("10")).Int(), 10)
+	eq(gson.New(10).Int(), 10)
 
 	b, _ := n(`"ok"`).MarshalJSON()
 	eq(string(b), `"ok"`)
@@ -107,9 +110,7 @@ func TestLab(t *testing.T) {
 }
 
 func n(s string) gson.JSON {
-	var j gson.JSON
-	_ = json.Unmarshal([]byte(s), &j)
-	return j
+	return gson.New(s)
 }
 
 func genEq(t *testing.T) func(a, b interface{}) {

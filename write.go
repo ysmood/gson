@@ -2,7 +2,23 @@ package gson
 
 import (
 	"encoding/json"
+	"io"
 )
+
+// New JSON from string, []byte, or io.Reader.
+func New(raw interface{}) (j JSON) {
+	switch v := raw.(type) {
+	case string:
+		_ = j.UnmarshalJSON([]byte(v))
+	case []byte:
+		_ = j.UnmarshalJSON(v)
+	case io.Reader:
+		_ = json.NewDecoder(v).Decode(&j)
+	default:
+		j.Sets(raw)
+	}
+	return
+}
 
 // UnmarshalJSON interface
 func (j *JSON) UnmarshalJSON(b []byte) error {
