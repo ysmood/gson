@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"reflect"
 	"regexp"
 	"strconv"
 	"strings"
@@ -11,12 +12,12 @@ import (
 
 // JSON represent a JSON value
 type JSON struct {
-	val interface{}
+	value interface{}
 }
 
 // MarshalJSON interface
 func (j JSON) MarshalJSON() ([]byte, error) {
-	return json.Marshal(j.val)
+	return json.Marshal(j.Val())
 }
 
 // JSON string
@@ -25,13 +26,13 @@ func (j JSON) JSON(prefix, indent string) string {
 	enc := json.NewEncoder(buf)
 	enc.SetEscapeHTML(false)
 	enc.SetIndent(prefix, indent)
-	_ = enc.Encode(j.val)
+	_ = enc.Encode(j.Val())
 	return buf.String()
 }
 
 // String implements fmt.Stringer interface
 func (j JSON) String() string {
-	return fmt.Sprintf("%v", j.val)
+	return fmt.Sprintf("%v", j.Val())
 }
 
 // Get by json path. It's a shortcut for Gets.
@@ -47,51 +48,70 @@ func (j JSON) Has(path string) bool {
 }
 
 // Gets element by path sections. If a section is not string or int, it will be ignored.
-// The second return value will be false if not found.
+// The last return value will be false if not found.
 func (j JSON) Gets(sections ...interface{}) (JSON, bool) {
 	for _, sect := range sections {
-		switch k := sect.(type) {
-		case int:
-			v, _ := j.val.([]interface{})
-			if k >= len(v) {
-				return JSON{}, false
-			}
-			j = JSON{v[k]}
-		case string:
-			v, _ := j.val.(map[string]interface{})
-			if _, has := v[k]; !has {
-				return JSON{}, false
-			}
-			j = JSON{v[k]}
+		val, has := get(reflect.ValueOf(j.Val()), sect)
+		if !has {
+			return JSON{}, false
 		}
+		j.value = val
 	}
 	return j, true
 }
 
-// Val of the underlaying json value
-func (j JSON) Val() interface{} {
-	return j.val
+func get(objVal reflect.Value, sect interface{}) (val interface{}, has bool) {
+	switch k := sect.(type) {
+	case int:
+		if objVal.Kind() != reflect.Slice || k >= objVal.Len() {
+			return
+		}
+
+		has = true
+		val = objVal.Index(k).Interface()
+
+	default:
+		sectVal := reflect.ValueOf(sect)
+
+		if objVal.Kind() != reflect.Map || !sectVal.Type().AssignableTo(objVal.Type().Key()) {
+			return
+		}
+
+		v := objVal.MapIndex(sectVal)
+		if !v.IsValid() {
+			return
+		}
+
+		has = true
+		val = v.Interface()
+	}
+
+	return
 }
 
 // Str value
 func (j JSON) Str() string {
-	if v, ok := j.val.(string); ok {
+	v := j.Val()
+	if v, ok := v.(string); ok {
 		return v
 	}
-	return fmt.Sprintf("%v", j.val)
+	return fmt.Sprintf("%v", v)
 }
+
+var floatType = reflect.TypeOf(.0)
 
 // Num value
 func (j JSON) Num() float64 {
-	if v, ok := j.val.(float64); ok {
-		return v
+	v := reflect.ValueOf(j.Val())
+	if v.Type().ConvertibleTo(floatType) {
+		return v.Convert(floatType).Float()
 	}
 	return 0
 }
 
 // Bool value
 func (j JSON) Bool() bool {
-	if v, ok := j.val.(bool); ok {
+	if v, ok := j.Val().(bool); ok {
 		return v
 	}
 	return false
@@ -99,17 +119,23 @@ func (j JSON) Bool() bool {
 
 // Nil or not
 func (j JSON) Nil() bool {
-	return j.val == nil
+	return j.Val() == nil
 }
+
+var intType = reflect.TypeOf(0)
 
 // Int value
 func (j JSON) Int() int {
-	return int(j.Num())
+	v := reflect.ValueOf(j.Val())
+	if v.Type().ConvertibleTo(intType) {
+		return int(v.Convert(intType).Int())
+	}
+	return 0
 }
 
 // Map of JSON
 func (j JSON) Map() map[string]JSON {
-	if v, ok := j.val.(map[string]interface{}); ok {
+	if v, ok := j.Val().(map[string]interface{}); ok {
 		obj := make(map[string]JSON, len(v))
 		for k, el := range v {
 			obj[k] = JSON{el}
@@ -122,7 +148,7 @@ func (j JSON) Map() map[string]JSON {
 
 // Arr of JSON
 func (j JSON) Arr() []JSON {
-	if v, ok := j.val.([]interface{}); ok {
+	if v, ok := j.Val().([]interface{}); ok {
 		l := len(v)
 		arr := make([]JSON, l)
 		for i := 0; i < l; i++ {
@@ -143,31 +169,6 @@ func (j JSON) Join(sep string) string {
 	}
 
 	return strings.Join(list, sep)
-}
-
-func toJSONVal(val interface{}) interface{} {
-	switch v := val.(type) {
-	case float64:
-	case string:
-	case bool:
-	case nil:
-	case []interface{}:
-		l := len(v)
-		for i := 0; i < l; i++ {
-			v[i] = toJSONVal(v[i])
-		}
-	case map[string]interface{}:
-		for k, el := range v {
-			v[k] = toJSONVal(el)
-		}
-	default:
-		b, _ := json.Marshal(val)
-		var n interface{}
-		_ = json.Unmarshal(b, &n)
-		return n
-	}
-
-	return val
 }
 
 var regIndex = regexp.MustCompile(`^0|([1-9]\d*)$`)

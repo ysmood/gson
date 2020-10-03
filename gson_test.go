@@ -2,6 +2,7 @@ package gson_test
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"reflect"
 	"testing"
@@ -36,11 +37,11 @@ func Test(t *testing.T) {
 	eq(gson.New([]byte("10")).Int(), 10)
 	eq(gson.New(bytes.NewBufferString("10")).Int(), 10)
 	eq(gson.New(10).Int(), 10)
+	eq(gson.New(gson.New(10)).Int(), 10)
 
 	b, _ := n(`"ok"`).MarshalJSON()
 	eq(string(b), `"ok"`)
 
-	eq(n(`"ok"`).Val(), "ok")
 	eq(n(`"ok"`).Str(), "ok")
 	eq(n(`1`).Str(), "1")
 	eq(n(`1.2`).Num(), 1.2)
@@ -68,16 +69,29 @@ func Test(t *testing.T) {
 	eq(j.Get("a").Map()["b"].Int(), 1)
 	eq(len(j.Get("c").Map()), 0)
 
+	eq(gson.New([]gson.JSON{
+		gson.New(1),
+		gson.New(map[string]int{"a": 2}),
+	}).Get("1.a").Int(), 2)
+
+	v, _ := gson.New(map[float64]int{2: 3}).Gets(2.0)
+	eq(v.Int(), 3)
+
+	_, has := j.Gets(true)
+	eq(has, false)
+
 	eq(j.Has("a.b"), true)
 	eq(j.Has("a.x"), false)
 	eq(j.Has("c.10"), false)
 
 	self := gson.JSON{}
+	self.Transform(func(v interface{}) interface{} { return "trans" })
+	eq(self.Str(), "trans")
 	self.Sets("ok")
 	eq(self.Str(), "ok")
-	self.Sets(map[string]interface{}{"a": 1})
+	self.Sets(map[string]int{"a": 1})
 	eq(self.Get("a").Int(), 1)
-	self.Sets([]interface{}{1})
+	self.Sets([]int{1})
 	eq(self.Get("0").Int(), 1)
 
 	j.Sets(2.0, "a", "b")
@@ -99,18 +113,12 @@ func Test(t *testing.T) {
 
 func TestLab(t *testing.T) {
 	eq := genEq(t)
-	j := n(`{
-		"a": {
-			"b": 1
-		},
-		"c": ["x", "y", "z"]
-	}`)
-
-	eq(j.Get("c.0").Str(), "x")
+	eq(gson.New(bytes.NewBufferString("10")).Int(), 10)
 }
 
-func n(s string) gson.JSON {
-	return gson.New(s)
+func n(s string) (j gson.JSON) {
+	_ = json.Unmarshal([]byte(s), &j)
+	return
 }
 
 func genEq(t *testing.T) func(a, b interface{}) {
