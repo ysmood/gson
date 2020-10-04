@@ -36,12 +36,16 @@ func Test(t *testing.T) {
 
 	eq(gson.NewFrom("true").Bool(), true)
 	eq(gson.New([]byte("10")).Int(), 10)
-	eq(gson.New(bytes.NewBufferString("10")).Int(), 10)
 	eq(gson.New(10).Int(), 10)
 	eq(gson.New(gson.New(10)).Int(), 10)
-	eq(gson.JSON{}.Int(), 0)
-	eq(gson.JSON{}.Num(), 0.0)
-	eq(gson.JSON{}.Bool(), false)
+	eq(gson.New(nil).Int(), 0)
+	eq(gson.New(nil).Num(), 0.0)
+	eq(gson.New(nil).Bool(), false)
+
+	buf := bytes.NewBufferString("10")
+	fromBuf := gson.New(buf)
+	eq(fromBuf.Int(), 10)
+	eq(fromBuf.Int(), 10)
 
 	b, _ := n(`"ok"`).MarshalJSON()
 	eq(string(b), `"ok"`)
@@ -91,9 +95,9 @@ func Test(t *testing.T) {
 	eq(j.Has("a.x"), false)
 	eq(j.Has("c.10"), false)
 
-	self := gson.JSON{}
-	self.Sets("ok", "a")
-	self.Sets("ok", 1)
+	self := gson.New(nil)
+	self.Set("1", "a")
+	self.Set("a.b.1", 1)
 	self.Sets("ok")
 	eq(self.Str(), "ok")
 	self.Sets(map[string]int{"a": 1})
@@ -119,8 +123,6 @@ func Test(t *testing.T) {
 }
 
 func TestLab(t *testing.T) {
-	eq := genEq(t)
-	eq(gson.New(bytes.NewBufferString("10")).Int(), 10)
 }
 
 func n(s string) (j gson.JSON) {

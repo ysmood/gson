@@ -7,9 +7,8 @@ import (
 )
 
 // New JSON from []byte, io.Reader, or raw value.
-func New(v interface{}) (j JSON) {
-	j.value = v
-	return
+func New(v interface{}) JSON {
+	return JSON{&v}
 }
 
 // NewFrom string
@@ -19,49 +18,52 @@ func NewFrom(s string) JSON {
 
 // UnmarshalJSON interface
 func (j *JSON) UnmarshalJSON(b []byte) error {
-	j.value = b
+	*j = New(b)
 	return nil
 }
 
 // Val of the underlaying json value
-func (j *JSON) Val() interface{} {
-	for {
-		val, ok := j.value.(JSON)
+func (j JSON) Val() interface{} {
+	for j.value != nil {
+		val, ok := (*j.value).(JSON)
 		if ok {
-			*j = val
+			*j.value = *val.value
 		} else {
 			break
 		}
 	}
 
 	var val interface{}
-	switch v := j.value.(type) {
+	switch v := (*j.value).(type) {
 	case []byte:
 		_ = json.Unmarshal(v, &val)
-		j.value = val
+		*j.value = val
 	case io.Reader:
 		_ = json.NewDecoder(v).Decode(&val)
-		j.value = val
+		*j.value = val
 	}
 
-	return j.value
+	return *j.value
 }
 
 // Set by json path. It's a shortcut for Sets.
-func (j *JSON) Set(path string, val interface{}) *JSON {
+func (j JSON) Set(path string, val interface{}) JSON {
 	return j.Sets(val, Path(path)...)
 }
 
+var _map map[string]interface{}
+var interfaceType = reflect.TypeOf(_map).Elem()
+
 // Sets element by path sections. If a section is not string or int, it will be ignored.
-func (j *JSON) Sets(target interface{}, sections ...interface{}) *JSON {
+func (j JSON) Sets(target interface{}, sections ...interface{}) JSON {
 	last := len(sections) - 1
 	val := reflect.ValueOf(j.Val())
 	override := func(v reflect.Value) {
-		j.value = v.Interface()
+		*j.value = v.Interface()
 	}
 
 	if last == -1 {
-		j.value = target
+		*j.value = target
 		return j
 	}
 
@@ -94,7 +96,7 @@ func (j *JSON) Sets(target interface{}, sections ...interface{}) *JSON {
 		default:
 			targetVal := reflect.ValueOf(target)
 			if val.Kind() != reflect.Map {
-				val = reflect.MakeMap(reflect.MapOf(sect.Type(), targetVal.Type()))
+				val = reflect.MakeMap(reflect.MapOf(sect.Type(), interfaceType))
 				override(val)
 			}
 			if i == last {

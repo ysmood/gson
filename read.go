@@ -12,7 +12,7 @@ import (
 
 // JSON represent a JSON value
 type JSON struct {
-	value interface{}
+	value *interface{}
 }
 
 // MarshalJSON interface
@@ -32,7 +32,7 @@ func (j JSON) JSON(prefix, indent string) string {
 
 // Raw underlaying value
 func (j JSON) Raw() interface{} {
-	return j.value
+	return *j.value
 }
 
 // String implements fmt.Stringer interface
@@ -58,9 +58,9 @@ func (j JSON) Gets(sections ...interface{}) (JSON, bool) {
 	for _, sect := range sections {
 		val, has := get(reflect.ValueOf(j.Val()), sect)
 		if !has {
-			return JSON{}, false
+			return New(nil), false
 		}
-		j.value = val
+		j.value = &val
 	}
 	return j, true
 }
