@@ -6,13 +6,15 @@ import (
 	"reflect"
 )
 
-// New JSON from string, []byte, or io.Reader.
+// New JSON from []byte, io.Reader, or raw value.
 func New(v interface{}) (j JSON) {
-	if s, ok := v.(string); ok {
-		v = []byte(s)
-	}
 	j.value = v
 	return
+}
+
+// NewFrom string
+func NewFrom(s string) JSON {
+	return New([]byte(s))
 }
 
 // UnmarshalJSON interface

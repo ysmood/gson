@@ -11,7 +11,7 @@ import (
 )
 
 func ExampleJSON() {
-	obj := gson.New(`{"a": {"b": [1, 2]}}`)
+	obj := gson.NewFrom(`{"a": {"b": [1, 2]}}`)
 
 	fmt.Println(obj.Get("a.b.0").Int())
 
@@ -34,6 +34,7 @@ func ExampleJSON() {
 func Test(t *testing.T) {
 	eq := genEq(t)
 
+	eq(gson.NewFrom("true").Bool(), true)
 	eq(gson.New([]byte("10")).Int(), 10)
 	eq(gson.New(bytes.NewBufferString("10")).Int(), 10)
 	eq(gson.New(10).Int(), 10)
