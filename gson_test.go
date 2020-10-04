@@ -39,6 +39,9 @@ func Test(t *testing.T) {
 	eq(gson.New(bytes.NewBufferString("10")).Int(), 10)
 	eq(gson.New(10).Int(), 10)
 	eq(gson.New(gson.New(10)).Int(), 10)
+	eq(gson.JSON{}.Int(), 0)
+	eq(gson.JSON{}.Num(), 0.0)
+	eq(gson.JSON{}.Bool(), false)
 
 	b, _ := n(`"ok"`).MarshalJSON()
 	eq(string(b), `"ok"`)
@@ -67,8 +70,10 @@ func Test(t *testing.T) {
 	eq(j.Get("c.1").Str(), "y")
 
 	eq(j.Get("c").Arr()[1].Str(), "y")
+	eq(gson.New([]int{1, 2}).Arr()[1].Int(), 2)
 	eq(j.Get("c").Join(" "), "x y z")
 	eq(j.Get("a").Map()["b"].Int(), 1)
+	eq(gson.New(map[string]int{"a": 1}).Map()["a"].Int(), 1)
 	eq(len(j.Get("c").Map()), 0)
 
 	eq(gson.New([]gson.JSON{

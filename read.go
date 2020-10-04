@@ -108,7 +108,7 @@ var floatType = reflect.TypeOf(.0)
 // Num value
 func (j JSON) Num() float64 {
 	v := reflect.ValueOf(j.Val())
-	if v.Type().ConvertibleTo(floatType) {
+	if v.IsValid() && v.Type().ConvertibleTo(floatType) {
 		return v.Convert(floatType).Float()
 	}
 	return 0
@@ -132,7 +132,7 @@ var intType = reflect.TypeOf(0)
 // Int value
 func (j JSON) Int() int {
 	v := reflect.ValueOf(j.Val())
-	if v.Type().ConvertibleTo(intType) {
+	if v.IsValid() && v.Type().ConvertibleTo(intType) {
 		return int(v.Convert(intType).Int())
 	}
 	return 0
@@ -140,10 +140,12 @@ func (j JSON) Int() int {
 
 // Map of JSON
 func (j JSON) Map() map[string]JSON {
-	if v, ok := j.Val().(map[string]interface{}); ok {
-		obj := make(map[string]JSON, len(v))
-		for k, el := range v {
-			obj[k] = JSON{el}
+	val := reflect.ValueOf(j.Val())
+	if val.IsValid() && val.Kind() == reflect.Map && val.Type().Key().Kind() == reflect.String {
+		obj := map[string]JSON{}
+		iter := val.MapRange()
+		for iter.Next() {
+			obj[iter.Key().String()] = New(iter.Value().Interface())
 		}
 		return obj
 	}
@@ -153,13 +155,14 @@ func (j JSON) Map() map[string]JSON {
 
 // Arr of JSON
 func (j JSON) Arr() []JSON {
-	if v, ok := j.Val().([]interface{}); ok {
-		l := len(v)
-		arr := make([]JSON, l)
+	val := reflect.ValueOf(j.Val())
+	if val.IsValid() && val.Kind() == reflect.Slice {
+		obj := []JSON{}
+		l := val.Len()
 		for i := 0; i < l; i++ {
-			arr[i] = JSON{v[i]}
+			obj = append(obj, New(val.Index(i).Interface()))
 		}
-		return arr
+		return obj
 	}
 
 	return make([]JSON, 0)
