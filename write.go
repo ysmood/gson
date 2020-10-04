@@ -56,7 +56,9 @@ func (j *JSON) Set(path string, val interface{}) *JSON {
 func (j *JSON) Sets(target interface{}, sections ...interface{}) *JSON {
 	last := len(sections) - 1
 	val := reflect.ValueOf(j.Val())
-	var override func(reflect.Value)
+	override := func(v reflect.Value) {
+		j.value = v.Interface()
+	}
 
 	if last == -1 {
 		j.value = target

@@ -92,6 +92,8 @@ func Test(t *testing.T) {
 	eq(j.Has("c.10"), false)
 
 	self := gson.JSON{}
+	self.Sets("ok", "a")
+	self.Sets("ok", 1)
 	self.Sets("ok")
 	eq(self.Str(), "ok")
 	self.Sets(map[string]int{"a": 1})
