@@ -30,6 +30,11 @@ func (j JSON) JSON(prefix, indent string) string {
 	return buf.String()
 }
 
+// Raw underlaying value
+func (j JSON) Raw() interface{} {
+	return j.value
+}
+
 // String implements fmt.Stringer interface
 func (j JSON) String() string {
 	return fmt.Sprintf("%v", j.Val())

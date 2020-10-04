@@ -21,11 +21,6 @@ func (j *JSON) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-// Transform of the underlaying value
-func (j *JSON) Transform(fn func(v interface{}) interface{}) {
-	j.value = fn(j.value)
-}
-
 // Val of the underlaying json value
 func (j *JSON) Val() interface{} {
 	for {

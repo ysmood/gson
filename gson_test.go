@@ -42,6 +42,7 @@ func Test(t *testing.T) {
 	b, _ := n(`"ok"`).MarshalJSON()
 	eq(string(b), `"ok"`)
 
+	eq(gson.New([]byte(`ok"`)).Raw(), []byte(`ok"`))
 	eq(n(`"ok"`).Str(), "ok")
 	eq(n(`1`).Str(), "1")
 	eq(n(`1.2`).Num(), 1.2)
@@ -85,8 +86,6 @@ func Test(t *testing.T) {
 	eq(j.Has("c.10"), false)
 
 	self := gson.JSON{}
-	self.Transform(func(v interface{}) interface{} { return "trans" })
-	eq(self.Str(), "trans")
 	self.Sets("ok")
 	eq(self.Str(), "ok")
 	self.Sets(map[string]int{"a": 1})
