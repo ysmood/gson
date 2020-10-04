@@ -24,7 +24,11 @@ func (j *JSON) UnmarshalJSON(b []byte) error {
 
 // Val of the underlaying json value
 func (j JSON) Val() interface{} {
-	for j.value != nil {
+	if j.value == nil {
+		return nil
+	}
+
+	for {
 		val, ok := (*j.value).(JSON)
 		if ok {
 			*j.value = *val.value
@@ -47,7 +51,7 @@ func (j JSON) Val() interface{} {
 }
 
 // Set by json path. It's a shortcut for Sets.
-func (j JSON) Set(path string, val interface{}) JSON {
+func (j *JSON) Set(path string, val interface{}) *JSON {
 	return j.Sets(val, Path(path)...)
 }
 
@@ -55,7 +59,11 @@ var _map map[string]interface{}
 var interfaceType = reflect.TypeOf(_map).Elem()
 
 // Sets element by path sections. If a section is not string or int, it will be ignored.
-func (j JSON) Sets(target interface{}, sections ...interface{}) JSON {
+func (j *JSON) Sets(target interface{}, sections ...interface{}) *JSON {
+	if j.value == nil {
+		*j = New(nil)
+	}
+
 	last := len(sections) - 1
 	val := reflect.ValueOf(j.Val())
 	override := func(v reflect.Value) {

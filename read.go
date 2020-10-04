@@ -27,7 +27,8 @@ func (j JSON) JSON(prefix, indent string) string {
 	enc.SetEscapeHTML(false)
 	enc.SetIndent(prefix, indent)
 	_ = enc.Encode(j.Val())
-	return buf.String()
+	s := buf.String()
+	return s[:len(s)-1]
 }
 
 // Raw underlaying value

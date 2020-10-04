@@ -38,7 +38,8 @@ func Test(t *testing.T) {
 	eq(gson.New([]byte("10")).Int(), 10)
 	eq(gson.New(10).Int(), 10)
 	eq(gson.New(gson.New(10)).Int(), 10)
-	eq(gson.New(nil).Int(), 0)
+	eq(gson.JSON{}.Int(), 0)
+	eq(gson.JSON{}.JSON("", ""), "null")
 	eq(gson.New(nil).Num(), 0.0)
 	eq(gson.New(nil).Bool(), false)
 
@@ -94,6 +95,9 @@ func Test(t *testing.T) {
 	eq(j.Has("a.b"), true)
 	eq(j.Has("a.x"), false)
 	eq(j.Has("c.10"), false)
+
+	onNil := gson.JSON{}
+	eq(onNil.Set("a.b", 10).Get("a.b").Int(), 10)
 
 	self := gson.New(nil)
 	self.Set("1", "a")
