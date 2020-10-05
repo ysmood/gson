@@ -8,10 +8,12 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 // JSON represent a JSON value
 type JSON struct {
+	lock  *sync.Mutex
 	value *interface{}
 }
 

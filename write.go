@@ -4,11 +4,12 @@ import (
 	"encoding/json"
 	"io"
 	"reflect"
+	"sync"
 )
 
 // New JSON from []byte, io.Reader, or raw value.
 func New(v interface{}) JSON {
-	return JSON{&v}
+	return JSON{&sync.Mutex{}, &v}
 }
 
 // NewFrom string
@@ -27,6 +28,9 @@ func (j JSON) Val() interface{} {
 	if j.value == nil {
 		return nil
 	}
+
+	j.lock.Lock()
+	defer j.lock.Unlock()
 
 	for {
 		val, ok := (*j.value).(JSON)
