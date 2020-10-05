@@ -74,6 +74,11 @@ func Test(t *testing.T) {
 	eq(j.Get("a.b").Int(), 1)
 	eq(j.Get("c.1").Str(), "y")
 
+	v, _ := j.Gets("c", gson.Query(func(i interface{}) (val interface{}, has bool) {
+		return i.([]interface{})[1], true
+	}))
+	eq(v.Str(), "y")
+
 	eq(j.Get("c").Arr()[1].Str(), "y")
 	eq(gson.New([]int{1, 2}).Arr()[1].Int(), 2)
 	eq(j.Get("c").Join(" "), "x y z")
@@ -86,7 +91,7 @@ func Test(t *testing.T) {
 		gson.New(map[string]int{"a": 2}),
 	}).Get("1.a").Int(), 2)
 
-	v, _ := gson.New(map[float64]int{2: 3}).Gets(2.0)
+	v, _ = gson.New(map[float64]int{2: 3}).Gets(2.0)
 	eq(v.Int(), 3)
 
 	_, has := j.Gets(true)

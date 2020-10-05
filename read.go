@@ -55,11 +55,23 @@ func (j JSON) Has(path string) bool {
 	return has
 }
 
-// Gets element by path sections. If a section is not string or int, it will be ignored.
+// Query section
+type Query func(interface{}) (val interface{}, has bool)
+
+// Gets element by path sections. If a section is not string, int, or func, it will be ignored.
+// If it's a func, the value will be passed to it, the result of it will the next level.
 // The last return value will be false if not found.
 func (j JSON) Gets(sections ...interface{}) (JSON, bool) {
 	for _, sect := range sections {
-		val, has := get(reflect.ValueOf(j.Val()), sect)
+		var val interface{}
+		var has bool
+
+		if fn, ok := sect.(Query); ok {
+			val, has = fn(j.Val())
+		} else {
+			val, has = get(reflect.ValueOf(j.Val()), sect)
+		}
+
 		if !has {
 			return New(nil), false
 		}
