@@ -23,7 +23,8 @@ func (j *JSON) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-// Val of the underlaying json value
+// Val of the underlaying json value.
+// The first time it's called, it will try to parse the underlying data.
 func (j JSON) Val() interface{} {
 	if j.value == nil {
 		return nil
@@ -122,4 +123,53 @@ func (j *JSON) Sets(target interface{}, sections ...interface{}) *JSON {
 		}
 	}
 	return j
+}
+
+// Del deletes the element at the path.
+func (j *JSON) Del(path string) *JSON {
+	j.Dels(Path(path)...)
+	return j
+}
+
+// Dels deletes the element at the path sections.
+// Return true if it's deleted.
+func (j *JSON) Dels(sections ...interface{}) bool {
+	l := len(sections)
+
+	if l == 0 {
+		j.value = nil
+		return true
+	}
+
+	last := sections[l-1]
+
+	parent, has := j.Gets(sections[:l-1]...)
+	if !has {
+		return false
+	}
+
+	parentVal := reflect.ValueOf(parent.Val())
+	lastVal := reflect.ValueOf(last)
+
+	switch k := last.(type) {
+	case int:
+		pl := parentVal.Len()
+		if parentVal.Kind() != reflect.Slice || k < 0 || k >= pl {
+			return false
+		}
+
+		j.Sets(reflect.AppendSlice(
+			parentVal.Slice(0, k),
+			parentVal.Slice(k+1, pl),
+		).Interface(), sections[:l-1]...)
+
+	default:
+		if parentVal.Kind() != reflect.Map || !lastVal.Type().AssignableTo(parentVal.Type().Key()) {
+			return false
+		}
+
+		parentVal.SetMapIndex(lastVal, reflect.Value{})
+	}
+
+	return true
 }

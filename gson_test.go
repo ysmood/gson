@@ -16,6 +16,7 @@ func ExampleJSON() {
 	fmt.Println(obj.Get("a.b.0").Int())
 
 	obj.Set("a.b.1", "ok").Set("c", 2)
+	obj.Del("c")
 	fmt.Println(">", obj.JSON("> ", "  "))
 
 	// Output:
@@ -26,8 +27,7 @@ func ExampleJSON() {
 	// >       1,
 	// >       "ok"
 	// >     ]
-	// >   },
-	// >   "c": 2
+	// >   }
 	// > }
 }
 
@@ -130,6 +130,20 @@ func Test(t *testing.T) {
 	j.Set("s.1.a", 10)
 	j.Set("c.5", "ok")
 	eq(fmt.Sprint(j), `map[a:map[b:3] c:[x 2 z <nil> <nil> ok] s:[<nil> map[a:10]]]`)
+
+	eq(j.Dels("s", 1, "a"), true)
+	eq(fmt.Sprint(j), `map[a:map[b:3] c:[x 2 z <nil> <nil> ok] s:[<nil> map[]]]`)
+	eq(j.Dels("s", 1), true)
+	eq(fmt.Sprint(j), `map[a:map[b:3] c:[x 2 z <nil> <nil> ok] s:[<nil>]]`)
+	j.Del("c.1")
+	eq(fmt.Sprint(j), `map[a:map[b:3] c:[x z <nil> <nil> ok] s:[<nil>]]`)
+	eq(j.Dels("c", 10), false)
+	eq(j.Dels("c", "1"), false)
+	eq(j.Dels("xxx", "1"), false)
+	eq(j.Dels(1), false)
+	d := gson.New(1)
+	d.Dels()
+	eq(d.Val(), nil)
 }
 
 func TestLab(t *testing.T) {

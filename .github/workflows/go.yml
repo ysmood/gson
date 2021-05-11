@@ -16,5 +16,5 @@ jobs:
 
     - run: |
         go install github.com/ysmood/golangci-lint@latest && golangci-lint
-        go test -coverprofile=coverage.txt
+        go test -coverprofile=coverage.out
         go install github.com/ysmood/got/cmd/check-cov@latest && check-cov
