@@ -51,6 +51,7 @@ func Test(t *testing.T) {
 	b, _ := n(`"ok"`).MarshalJSON()
 	eq(string(b), `"ok"`)
 
+	eq(gson.JSON{}.Raw(), nil)
 	eq(gson.New([]byte(`ok"`)).Raw(), []byte(`ok"`))
 	eq(n(`"ok"`).Str(), "ok")
 	eq(n(`1`).Str(), "1")

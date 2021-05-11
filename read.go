@@ -35,6 +35,9 @@ func (j JSON) JSON(prefix, indent string) string {
 
 // Raw underlaying value
 func (j JSON) Raw() interface{} {
+	if j.value == nil {
+		return nil
+	}
 	return *j.value
 }
 
