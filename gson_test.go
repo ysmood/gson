@@ -146,6 +146,20 @@ func Test(t *testing.T) {
 	eq(d.Val(), nil)
 }
 
+func TestConvertors(t *testing.T) {
+	eq := genEq(t)
+
+	n := 1.2
+	i := 1
+	s := "ok"
+	b := true
+
+	eq(gson.Num(n), &n)
+	eq(gson.Int(i), &i)
+	eq(gson.Str(s), &s)
+	eq(gson.Bool(b), &b)
+}
+
 func TestLab(t *testing.T) {
 }
 

@@ -215,3 +215,23 @@ func Path(path string) []interface{} {
 	}
 	return sects
 }
+
+// Num returns the pointer of the v
+func Num(v float64) *float64 {
+	return &v
+}
+
+// Int returns the pointer of the v
+func Int(v int) *int {
+	return &v
+}
+
+// Str returns the pointer of the v
+func Str(v string) *string {
+	return &v
+}
+
+// Bool returns the pointer of the v
+func Bool(v bool) *bool {
+	return &v
+}
