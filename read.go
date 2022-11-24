@@ -1,3 +1,4 @@
+// Package gson A tiny JSON lib to read and alter a JSON value.
 package gson
 
 import (
@@ -51,7 +52,7 @@ func (j JSON) JSON(prefix, indent string) string {
 	return s[:len(s)-1]
 }
 
-// Raw underlaying value
+// Raw underlying value
 func (j JSON) Raw() interface{} {
 	if j.value == nil {
 		return nil
@@ -59,7 +60,7 @@ func (j JSON) Raw() interface{} {
 	return *j.value
 }
 
-// String implements fmt.Stringer interface
+// String implements [fmt.Stringer] interface
 func (j JSON) String() string {
 	return fmt.Sprintf("%v", j.Val())
 }
