@@ -22,6 +22,24 @@ func (j JSON) MarshalJSON() ([]byte, error) {
 	return json.Marshal(j.Val())
 }
 
+// Unmarshal is the same as [json.Unmarshal] for the underlying raw value.
+// It should be called before other operations.
+func (j JSON) Unmarshal(v interface{}) error {
+	if j.value == nil {
+		return fmt.Errorf("gson: no value to unmarshal")
+	}
+
+	j.lock.Lock()
+	defer j.lock.Unlock()
+
+	b, ok := (*j.value).([]byte)
+	if !ok {
+		return fmt.Errorf("gson: value has been parsed")
+	}
+
+	return json.Unmarshal(b, v)
+}
+
 // JSON string
 func (j JSON) JSON(prefix, indent string) string {
 	buf := bytes.NewBuffer(nil)

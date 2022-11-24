@@ -146,6 +146,30 @@ func Test(t *testing.T) {
 	eq(d.Val(), nil)
 }
 
+func TestUnmarshal(t *testing.T) {
+	eq := genEq(t)
+
+	v := struct {
+		A int `json:"a"`
+	}{}
+
+	g := gson.New([]byte(`{"a":1}`))
+
+	err := g.Unmarshal(&v)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if v.A != 1 {
+		t.Fatal("parse error")
+	}
+
+	g.Get("a")
+	eq(g.Unmarshal(&v).Error(), "gson: value has been parsed")
+
+	eq(gson.JSON{}.Unmarshal(&v).Error(), "gson: no value to unmarshal")
+}
+
 func TestConvertors(t *testing.T) {
 	eq := genEq(t)
 
